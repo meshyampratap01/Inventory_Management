@@ -1,7 +1,10 @@
-from jose import jwt, JWTError
+from fastapi import status
+from jose import jwt
+
+from app.app_exception.app_exception import AppException
 
 
-def verify_access_token(token: str) -> dict:
+def verify_access_token(token: str, jwks, COGNITO_ISSUER) -> dict:
     headers = jwt.get_unverified_header(token)
     kid = headers["kid"]
 
@@ -12,10 +15,13 @@ def verify_access_token(token: str) -> dict:
         key,
         algorithms=["RS256"],
         issuer=COGNITO_ISSUER,
-        options={"verify_aud": False},  # Cognito access tokens don't use aud
+        options={"verify_aud": False},
     )
 
     if payload.get("token_use") != "access":
-        raise ValueError("Not an access token")
+        raise AppException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            message="Invalid or expired token",
+        )
 
     return payload
