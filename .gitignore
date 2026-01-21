@@ -1,0 +1,14 @@
+__pycache__
+
+# Ignore files and directories
+*.pyc
+*.pyo
+
+# Ignore directories
+build
+dist
+
+.env
+.venv
+
+.venv/
