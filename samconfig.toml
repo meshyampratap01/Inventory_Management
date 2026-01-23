@@ -1,5 +1,4 @@
 version = 0.1
-
 [default.deploy.parameters]
 stack_name = "inventory-management"
 resolve_s3 = true

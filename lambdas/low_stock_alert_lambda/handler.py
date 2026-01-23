@@ -38,6 +38,6 @@ def send_low_stock_email(data: dict):
 
     ses.send_email(
         Source=SENDER_EMAIL,
-        Destination={"ToAddresses": [data["manager_email"]]},
+        Destination={"ToAddresses": [email for email in data["manager_email"]]},
         Message={"Subject": {"Data": subject}, "Body": {"Text": {"Data": body}}},
     )

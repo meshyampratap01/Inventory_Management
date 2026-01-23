@@ -27,6 +27,7 @@ async def lifespan(app: FastAPI):
     cognito = boto3.client("cognito-idp", region_name="ap-south-1")
     app.state.cognito_client = cognito
     app.state.cognito_client_id = os.getenv("COGNITO_CLIENT_ID")
+    app.state.user_pool_id = os.getenv("USER_POOL_ID")
 
     JWKSURL = os.getenv("JWKS_URL")
     app.state.jwks = await fetch_jwks(JWKSURL)
@@ -41,12 +42,16 @@ async def lifespan(app: FastAPI):
 
 
 def get_cognito_config(request: Request):
-    return (request.app.state.cognito_client, request.app.state.cognito_client_id)
+    return (
+        request.app.state.cognito_client,
+        request.app.state.cognito_client_id,
+        request.app.state.user_pool_id,
+    )
 
 
 def get_user_service(request: Request) -> UserService:
-    cognito_client, cognito_client_id = get_cognito_config(request)
-    return UserService(cognito_client, cognito_client_id)
+    cognito_client, cognito_client_id, user_pool_id = get_cognito_config(request)
+    return UserService(cognito_client, cognito_client_id, user_pool_id)
 
 
 security = HTTPBearer()
@@ -94,3 +99,8 @@ def get_ddb_table(request: Request):
 def get_sns_topic_arn():
     topic_arn = os.getenv("topic_arn")
     return topic_arn
+
+
+def get_cognito_client(request: Request):
+    cognito_client = request.app.state.cognito_client
+    return cognito_client

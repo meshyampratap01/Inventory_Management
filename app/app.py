@@ -1,6 +1,7 @@
 from app.routes.auth import auth_router
 from app.routes.category import category_router
 from app.routes.products import products_router
+from app.routes.employees import employee_router
 from fastapi import FastAPI, HTTPException, Request
 from app.app_exception.app_exception import AppException
 from fastapi.exceptions import RequestValidationError
@@ -50,3 +51,4 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 app.include_router(auth_router)
 app.include_router(products_router)
 app.include_router(category_router)
+app.include_router(employee_router)
