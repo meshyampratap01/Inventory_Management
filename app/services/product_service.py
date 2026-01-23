@@ -36,6 +36,13 @@ class ProductService:
 
         return product.quantity <= effective_threshold
 
+    def _get_effective_threshold(self, product: Product, category) -> int:
+        return (
+            product.override_threshold
+            if product.override_threshold is not None
+            else category.default_threshold
+        )
+
     def create_product(self, req: CreateProductRequest):
         _ = self.category_repo.get_category(req.category)
         product_id = str(uuid.uuid4())
@@ -47,6 +54,7 @@ class ProductService:
             quantity=req.quantity,
             category=req.category,
             override_threshold=req.override_threshold,
+            low_stock_alert_sent=False,
         )
 
         self.product_repo.save_product(product)
@@ -62,7 +70,16 @@ class ProductService:
     def stock_in(self, req: StockUpdateRequest):
         product_id = req.product_id
         quantity = req.quantity
-        return self.product_repo.stock_in(product_id, quantity)
+
+        self.product_repo.stock_in(product_id, quantity)
+
+        product = self.product_repo.get_product_by_id(product_id)
+        category = self.category_repo.get_category(product.category)
+
+        product_threshold = self._get_effective_threshold(product, category)
+        product = self.product_repo.get_product_by_id(product_id)
+        if product.low_stock_alert_sent and product.quantity > product_threshold:
+            self.product_repo.update_low_stock_alert_sent(product.id, False)
 
     def stock_out(self, req: StockUpdateRequest):
         product_id = req.product_id
@@ -82,7 +99,7 @@ class ProductService:
         self.product_repo.stock_out(product_id, quantity)
         product = self.product_repo.get_product_by_id(product_id)
 
-        if self._is_low_stock(product, category):
+        if not product.low_stock_alert_sent and self._is_low_stock(product, category):
             sns_publisher = SNSEventPublisher()
             manager_emails = []
             try:
@@ -101,13 +118,14 @@ class ProductService:
                 for attr in user["Attributes"]:
                     if attr["Name"] == "email":
                         manager_emails.append(attr["Value"])
-                payload = {
-                    "event_type": "LOW_STOCK",
-                    "product_id": product_id,
-                    "product_name": product.name,
-                    "category": product.category,
-                    "current_quantity": product.quantity,
-                    "threshold": default_threshold,
-                    "manager_email": manager_emails,
-                }
+            payload = {
+                "event_type": "LOW_STOCK",
+                "product_id": product_id,
+                "product_name": product.name,
+                "category": product.category,
+                "current_quantity": product.quantity,
+                "threshold": default_threshold,
+                "manager_email": manager_emails,
+            }
             sns_publisher.publish_event(payload)
+            self.product_repo.update_low_stock_alert_sent(product.id, True)

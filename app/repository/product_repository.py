@@ -180,3 +180,57 @@ class ProductRepository:
                 error_code="STOCK_OUT_FAILED",
                 details=e.response,
             )
+
+    def update_low_stock_alert_sent(
+        self,
+        product_id: str,
+        sent: bool,
+    ):
+        try:
+            self.ddb_client.transact_write_items(
+                TransactItems=[
+                    {
+                        "Update": {
+                            "TableName": self.table.name,
+                            "Key": {
+                                "pk": f"PRODUCT#{product_id}",
+                                "sk": "META",
+                            },
+                            "UpdateExpression": "SET low_stock_alert_sent = :sent",
+                            "ExpressionAttributeValues": {
+                                ":sent": sent,
+                            },
+                            "ConditionExpression": "attribute_exists(pk)",
+                        }
+                    },
+                    {
+                        "Update": {
+                            "TableName": self.table.name,
+                            "Key": {
+                                "pk": "PRODUCTS",
+                                "sk": f"PRODUCT#{product_id}",
+                            },
+                            "UpdateExpression": "SET low_stock_alert_sent = :sent",
+                            "ExpressionAttributeValues": {
+                                ":sent": sent,
+                            },
+                            "ConditionExpression": "attribute_exists(pk)",
+                        }
+                    },
+                ]
+            )
+
+        except ClientError as e:
+            if e.response["Error"]["Code"] == "TransactionCanceledException":
+                raise AppException(
+                    message="Product not found",
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    error_code="PRODUCT_NOT_FOUND",
+                )
+
+            raise AppException(
+                message="Failed to update low stock alert flag",
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                error_code="DATABASE_ERROR",
+                details=e.response,
+            )

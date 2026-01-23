@@ -9,5 +9,6 @@ class Product(BaseModel):
     quantity: int = Field(..., ge=0)
     category: str
     override_threshold: Optional[int] = Field(None, ge=0)
+    low_stock_alert_sent: Optional[bool] = Field(False)
 
     model_config = ConfigDict(extra="ignore")
