@@ -1,0 +1,40 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: Low stock alert system (SNS → Lambda → SES)
+
+Globals:
+  Function:
+    Runtime: python3.12
+    Timeout: 10
+    MemorySize: 128
+    Tracing: Active
+
+Parameters:
+  LowStockTopicArn:
+    Type: String
+    Description: Existing SNS topic ARN
+
+Resources:
+  LowStockEmailFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: low-stock-email-sender
+      CodeUri: ../lambdas/low_stock_alert_lambda/
+      Handler: handler.lambda_handler
+      Environment:
+        Variables:
+          SENDER_EMAIL: inventory@prime1.me
+
+      Events:
+        LowStockSNSTrigger:
+          Type: SNS
+          Properties:
+            Topic: !Ref LowStockTopicArn
+
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - ses:SendEmail
+                - ses:SendRawEmail
+              Resource: "*"

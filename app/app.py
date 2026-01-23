@@ -1,4 +1,6 @@
 from app.routes.auth import auth_router
+from app.routes.category import category_router
+from app.routes.products import products_router
 from fastapi import FastAPI, HTTPException, Request
 from app.app_exception.app_exception import AppException
 from fastapi.exceptions import RequestValidationError
@@ -10,10 +12,14 @@ app = FastAPI(lifespan=lifespan)
 
 
 @app.exception_handler(AppException)
-async def app_exception_handler(request: Request, exc: AppException):
+async def app_exception_handler(request, exc):
     return JSONResponse(
         status_code=exc.status_code,
-        content={"error": exc.message},
+        content={
+            "error": exc.error_code,
+            "message": exc.message,
+            "details": exc.details,
+        },
     )
 
 
@@ -42,3 +48,5 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 
 app.include_router(auth_router)
+app.include_router(products_router)
+app.include_router(category_router)

@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.dependencies import get_user_service
-from app.dtos.login_request import LoginRequest
-from app.dtos.signup_request import ConfirmSignupRequest, SignupRequest
+from app.dto.login_request import LoginRequest
+from app.dto.signup_request import ConfirmSignupRequest, SignupRequest
 from app.services.user_service import UserService
 
 auth_router = APIRouter(
@@ -18,10 +18,7 @@ def signup_handler(
 ):
     user_email = req.email
     user_password = req.password
-    try:
-        return user_service.signup(user_email, user_password)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    return user_service.signup(user_email, user_password)
 
 
 @auth_router.post("/signup/confirm", status_code=200)

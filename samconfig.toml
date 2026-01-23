@@ -1,0 +1,14 @@
+version = 0.1
+
+[default.deploy.parameters]
+stack_name = "inventory-management"
+resolve_s3 = true
+s3_prefix = "inventory-management"
+region = "ap-south-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "LowStockTopicArn=\"arn:aws:sns:ap-south-1:915908749134:simpleEmailSNS\""
+image_repositories = []
+
+[default.global.parameters]
+region = "ap-south-1"
