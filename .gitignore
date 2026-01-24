@@ -15,4 +15,6 @@ dist
 
 .aws-sam
 
+.coverage
+
 
