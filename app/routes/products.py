@@ -60,3 +60,13 @@ def stock_out_handler(
     return APIResponse(
         status_code=200, message="Product's stock updated successfully", data=data
     )
+
+
+@products_router.delete("/", status_code=200, response_model=APIResponse)
+def delete_product_handler(
+    product_id: str,
+    product_service: ProductService = Depends(ProductService),
+    _=Depends(require_any_group(UserGroup.MANAGER)),
+):
+    product_service.delete_product(product_id)
+    return APIResponse(status_code=200, message="Product deleted successfully")

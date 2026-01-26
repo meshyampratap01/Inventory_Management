@@ -29,9 +29,13 @@ async def lifespan(app: FastAPI):
     app.state.cognito_client_id = os.getenv("COGNITO_CLIENT_ID")
     app.state.user_pool_id = os.getenv("USER_POOL_ID")
 
-    JWKSURL = os.getenv("JWKS_URL")
-    app.state.jwks = await fetch_jwks(JWKSURL)
     app.state.cognito_issuer = os.getenv("COGNITO_ISSUER")
+    if app.state.cognito_issuer is None:
+        raise Exception("COGNITO_ISSUER is not set")
+    JWKSURL = os.getenv("JWKS_URL")
+    if JWKSURL is None:
+        raise Exception("JWKS_URL is not set")
+    app.state.jwks = await fetch_jwks(JWKSURL)
 
     ddb_resource = boto3.resource(
         "dynamodb", region_name=os.getenv("AWS_REGION", "ap-south-1")

@@ -58,3 +58,6 @@ class CategoryService:
 
     def update_threshold(self, req: UpdateCategoryRequest, name):
         self.category_repository.update_category(name, req)
+
+    def delete_category(self, name):
+        self.category_repository.delete_category(name)

@@ -1,9 +1,8 @@
 version = 0.1
 [default.deploy.parameters]
-stack_name = "inventory-management"
+stack_name = "inventory-management-lambda"
 resolve_s3 = true
-s3_prefix = "inventory-management"
-region = "ap-south-1"
+s3_prefix = "inventory-management-lambda"
 confirm_changeset = true
 capabilities = "CAPABILITY_IAM"
 parameter_overrides = "LowStockTopicArn=\"arn:aws:sns:ap-south-1:915908749134:simpleEmailSNS\""

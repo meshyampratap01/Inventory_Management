@@ -129,3 +129,6 @@ class ProductService:
             }
             sns_publisher.publish_event(payload)
             self.product_repo.update_low_stock_alert_sent(product.id, True)
+
+    def delete_product(self, product_id: str):
+        self.product_repo.delete_product(product_id)

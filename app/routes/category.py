@@ -52,3 +52,14 @@ def update_threshold_handler(
 ):
     category_service.update_threshold(req, name)
     return APIResponse(status_code=200, message="Category updated successfully")
+
+
+@category_router.delete(
+    "/{name}", status_code=status.HTTP_200_OK, response_model=APIResponse
+)
+def delete_category_handler(
+    name: str,
+    category_service: CategoryService = Depends(CategoryService),
+):
+    category_service.delete_category(name)
+    return APIResponse(status_code=200, message="Category deleted successfully")

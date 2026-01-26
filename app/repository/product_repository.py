@@ -234,3 +234,48 @@ class ProductRepository:
                 error_code="DATABASE_ERROR",
                 details=e.response,
             )
+
+    def delete_product(self, product_id: str):
+        try:
+            self.ddb_client.transact_write_items(
+                TransactItems=[
+                    {
+                        "Delete": {
+                            "TableName": self.table.name,
+                            "Key": {
+                                "pk": f"PRODUCT#{product_id}",
+                                "sk": "META",
+                            },
+                            # ensure product exists
+                            "ConditionExpression": "attribute_exists(pk)",
+                        }
+                    },
+                    {
+                        "Delete": {
+                            "TableName": self.table.name,
+                            "Key": {
+                                "pk": "PRODUCTS",
+                                "sk": f"PRODUCT#{product_id}",
+                            },
+                            # safety check for consistency
+                            "ConditionExpression": "attribute_exists(pk)",
+                        }
+                    },
+                ]
+            )
+
+        except ClientError as e:
+            if e.response["Error"]["Code"] == "TransactionCanceledException":
+                raise AppException(
+                    message="Product not found",
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    error_code="PRODUCT_NOT_FOUND",
+                    details={"product_id": product_id},
+                )
+
+            raise AppException(
+                message="Failed to delete product",
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                error_code="DATABASE_ERROR",
+                details=e.response,
+            )

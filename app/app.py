@@ -48,6 +48,11 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     )
 
 
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
+
+
 app.include_router(auth_router)
 app.include_router(products_router)
 app.include_router(category_router)

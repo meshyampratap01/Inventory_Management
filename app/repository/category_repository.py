@@ -45,7 +45,7 @@ class CategoryRepository:
                 details={"error": str(e)},
             )
 
-    def get_category(self, name: str) -> Category:
+    def get_category(self, name: str) -> Category | None:
         try:
             response = self.table.get_item(
                 Key={
@@ -54,14 +54,7 @@ class CategoryRepository:
                 }
             )
             item = response.get("Item")
-            if item is None:
-                raise AppException(
-                    message="Category not found",
-                    error_code="CATEGORY_NOT_FOUND",
-                    status_code=status.HTTP_404_NOT_FOUND,
-                )
-
-            return Category(**item)
+            return Category(**item) if item else None
 
         except ClientError as e:
             raise AppException(
@@ -125,6 +118,31 @@ class CategoryRepository:
 
             raise AppException(
                 message="Failed to update category",
+                error_code="DATABASE_ERROR",
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                details={"error": str(e)},
+            )
+
+    def delete_category(self, name: str):
+        try:
+            self.table.delete_item(
+                Key={
+                    "pk": "CATEGORY",
+                    "sk": f"CATEGORY#{name}",
+                },
+                ConditionExpression="attribute_exists(pk) AND attribute_exists(sk)",
+            )
+
+        except ClientError as e:
+            if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
+                raise AppException(
+                    message="Category not found",
+                    error_code="CATEGORY_NOT_FOUND",
+                    status_code=status.HTTP_404_NOT_FOUND,
+                )
+
+            raise AppException(
+                message="Failed to delete category",
                 error_code="DATABASE_ERROR",
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 details={"error": str(e)},
