@@ -246,7 +246,6 @@ class ProductRepository:
                                 "pk": f"PRODUCT#{product_id}",
                                 "sk": "META",
                             },
-                            # ensure product exists
                             "ConditionExpression": "attribute_exists(pk)",
                         }
                     },
@@ -257,7 +256,6 @@ class ProductRepository:
                                 "pk": "PRODUCTS",
                                 "sk": f"PRODUCT#{product_id}",
                             },
-                            # safety check for consistency
                             "ConditionExpression": "attribute_exists(pk)",
                         }
                     },

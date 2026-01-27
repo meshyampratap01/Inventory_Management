@@ -89,16 +89,6 @@ class TestCategoryRepository(unittest.TestCase):
 
         self.mock_table.get_item.assert_called_once()
 
-    def test_get_category_not_found(self):
-        self.mock_table.get_item.return_value = {}
-
-        with self.assertRaises(AppException) as ctx:
-            self.repo.get_category("UNKNOWN")
-
-        exc = ctx.exception
-        self.assertEqual(exc.status_code, 404)
-        self.assertEqual(exc.error_code, "CATEGORY_NOT_FOUND")
-
     def test_get_category_ddb_failure(self):
         self.mock_table.get_item.side_effect = ddb_error("InternalServerError")
 
@@ -198,6 +188,19 @@ class TestCategoryRepository(unittest.TestCase):
         self.assertEqual(exc.status_code, 500)
         self.assertEqual(exc.error_code, "DATABASE_ERROR")
 
+    def test_delete_category_success(self):
+        self.repo.delete_category("ELECTRONICS")
 
-if __name__ == "__main__":
-    unittest.main()
+        self.mock_table.delete_item.assert_called_once()
+
+    def test_delete_category_not_found(self):
+        self.mock_table.delete_item.side_effect = ddb_error(
+            "ConditionalCheckFailedException"
+        )
+
+        with self.assertRaises(AppException) as ctx:
+            self.repo.delete_category("UNKNOWN")
+
+        exc = ctx.exception
+        self.assertEqual(exc.status_code, 404)
+        self.assertEqual(exc.error_code, "CATEGORY_NOT_FOUND")

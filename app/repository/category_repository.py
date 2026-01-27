@@ -93,7 +93,6 @@ class CategoryRepository:
             update_expressions.append("description = :description")
             expression_values[":description"] = req.description
 
-        # 🚫 Nothing to update
         if not update_expressions:
             return
 

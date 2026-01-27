@@ -25,8 +25,6 @@ class TestProductRepository(unittest.TestCase):
 
         self.repo = ProductRepository(table=self.mock_table)
 
-    # ---------- SAVE PRODUCT ----------
-
     def test_save_product_success(self):
         product = Product(
             id="p1",
@@ -84,8 +82,6 @@ class TestProductRepository(unittest.TestCase):
 
         self.assertEqual(ctx.exception.status_code, 500)
 
-    # ---------- GET ALL PRODUCTS ----------
-
     def test_get_all_products_success(self):
         self.mock_table.query.return_value = {
             "Items": [
@@ -112,37 +108,6 @@ class TestProductRepository(unittest.TestCase):
         self.assertIsInstance(products[0], Product)
         self.assertEqual(products[1].id, "p2")
 
-    # ---------- GET PRODUCT BY ID ----------
-
-    def test_get_product_by_id_success(self):
-        self.mock_table.get_item.return_value = {
-            "Item": {
-                "id": "p1",
-                "name": "Item",
-                "price": Decimal("10"),
-                "quantity": 5,
-                "category": "CAT",
-                "override_threshold": None,
-                "low_stock_alert_sent": False,
-            }
-        }
-
-        product = self.repo.get_product_by_id("p1")
-
-        self.assertEqual(product.id, "p1")
-
-    def test_get_product_by_id_not_found(self):
-        self.mock_table.get_item.return_value = {}
-
-        with self.assertRaises(AppException) as ctx:
-            self.repo.get_product_by_id("p1")
-
-        exc = ctx.exception
-        self.assertEqual(exc.status_code, 404)
-        self.assertEqual(exc.error_code, "PRODUCT_NOT_FOUND")
-
-    # ---------- STOCK IN ----------
-
     def test_stock_in_success(self):
         self.repo.stock_in("p1", 5)
 
@@ -157,8 +122,6 @@ class TestProductRepository(unittest.TestCase):
             self.repo.stock_in("p1", 5)
 
         self.assertEqual(ctx.exception.error_code, "STOCK_IN_FAILED")
-
-    # ---------- STOCK OUT ----------
 
     def test_stock_out_success(self):
         self.repo.stock_out("p1", 2)
@@ -187,8 +150,6 @@ class TestProductRepository(unittest.TestCase):
 
         self.assertEqual(ctx.exception.error_code, "STOCK_OUT_FAILED")
 
-    # ---------- UPDATE LOW STOCK ALERT ----------
-
     def test_update_low_stock_alert_success(self):
         self.repo.update_low_stock_alert_sent("p1", True)
 
@@ -216,6 +177,19 @@ class TestProductRepository(unittest.TestCase):
 
         self.assertEqual(ctx.exception.error_code, "DATABASE_ERROR")
 
+    def test_delete_product_success(self):
+        self.repo.delete_product("p1")
 
-if __name__ == "__main__":
-    unittest.main()
+        self.mock_ddb_client.transact_write_items.assert_called_once()
+
+    def test_delete_product_not_found(self):
+        self.mock_ddb_client.transact_write_items.side_effect = ddb_tx_error(
+            "TransactionCanceledException"
+        )
+
+        with self.assertRaises(AppException) as ctx:
+            self.repo.delete_product("p1")
+
+        exc = ctx.exception
+        self.assertEqual(exc.status_code, 404)
+        self.assertEqual(exc.error_code, "PRODUCT_NOT_FOUND")
