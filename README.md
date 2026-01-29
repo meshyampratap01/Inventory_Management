@@ -30,7 +30,12 @@ This system follows a **containerized + event-driven architecture**:
 
 ---
 
-#  Architecture
+#  Architecture Diagram
+
+<img width="750" height="616" alt="HLD drawio" src="https://github.com/user-attachments/assets/aaf919f0-37f9-4ddd-a3ef-c782af48a727" />
+
+
+---
 
 ## Core API (Containerized)
 
@@ -77,6 +82,13 @@ When stock falls below a threshold:
 - Prevents blocking requests  
 - Reliable retries  
 - Easily extensible  
+
+---
+
+# Email Alert Screenshots
+
+<img width="710" height="727" alt="image" src="https://github.com/user-attachments/assets/784774df-f1e7-495a-a07c-7d12a6921ac5" />
+
 
 ---
 
@@ -238,13 +250,6 @@ docker push <ecr-uri>
 - Attach ALB  
 - Configure health checks  
 - Set environment variables  
-
----
-
-#  Architecture Diagram
-
-<img width="750" height="616" alt="HLD drawio" src="https://github.com/user-attachments/assets/aaf919f0-37f9-4ddd-a3ef-c782af48a727" />
-
 
 ---
 
