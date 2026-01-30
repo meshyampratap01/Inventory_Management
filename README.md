@@ -12,7 +12,7 @@ Design a backend inventory system for a small shop to:
 
 - Track stock levels  
 - Record incoming and outgoing inventory  
-- Automatically detect low-stock situations  
+- Detect low-stock situations  
 - Send alerts when inventory falls below thresholds  
 
 This system is designed to be **scalable, fault-tolerant, and production-ready**, suitable for real-world small business usage.
@@ -32,7 +32,8 @@ This system follows a **containerized + event-driven architecture**:
 
 #  Architecture Diagram
 
-<img width="750" height="616" alt="HLD drawio" src="https://github.com/user-attachments/assets/aaf919f0-37f9-4ddd-a3ef-c782af48a727" />
+<img width="761" height="626" alt="ivvm drawio" src="https://github.com/user-attachments/assets/5d1f6d0f-c715-492e-9af8-0f2b69235ac3" />
+
 
 
 ---
